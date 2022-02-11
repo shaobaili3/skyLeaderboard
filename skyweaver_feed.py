@@ -49,7 +49,7 @@ async def post_url(url, data, hard=True):
 
 def get_feed(account):
     data_all = [{"req": {"accountAddress": account},
-                 "page": {"pageSize": 1, "page": 1}}]
+                 "page": {"pageSize": 200, "page": 1}}]
     tasks = [post_url('https://api.skyweaver.net/rpc/SkyWeaverAPI/GetFeed', data, False) for data in data_all]
     _results = get_event_loop().run_until_complete(gather(*tasks))
     result_dict = loads(_results[0])
@@ -57,7 +57,7 @@ def get_feed(account):
     # pages = (total - 1) // 200 + 1
     pages = 1
     data_all = [{"req": {"accountAddress": account},
-                 "page": {"pageSize": 500, "page": i+1}} for i in range(pages)]
+                 "page": {"pageSize": 200, "page": i+1}} for i in range(pages)]
     tasks = [post_url('https://api.skyweaver.net/rpc/SkyWeaverAPI/GetFeed', data, False) for data in data_all]
     _results = get_event_loop().run_until_complete(gather(*tasks))
     for result in _results:
@@ -77,10 +77,11 @@ def get_feed(account):
                     elif card['itemType'] == "SW_GOLD_CARDS":
                         reward_map['SW_GOLD_CARDS'] += 1
                         is_conquest = True
+                        ticket_used += 1
                     elif card['itemType'] == "SW_BASE_CARDS":
                         reward_map['SW_BASE_CARDS'] += 1
-                if is_conquest:
-                    ticket_used += 1
+                # if is_conquest:
+                #     ticket_used += 1
             if item['type'] == 'MATCH':  # LEVELUP, REWARD
                 match = item['match']
                 mode = match['mode']
@@ -96,6 +97,10 @@ def get_feed(account):
                 else:
                     winned = False
                 last_time = match['endedAt']
+
+                if mode in ['CONQUEST_CONSTRUCTED', 'CONQUEST_DISCOVERY']:
+                    if not winned:
+                        ticket_used += 1
 
                 if mode not in mode_map:
                     mode_map[mode] = {'W': 0, 'L': 0, 'D': {}}
@@ -153,6 +158,18 @@ def run():
         get_feed('0xf4866719f288d6e314abDcF931B4f1BCFbC96780')
         print('yexx天梯第一')
         get_feed('0xd7559dd61b9f25daf09d31378be80d81632e7d86')
+        print('shenggou')
+        get_feed('0x89a200079e6e2d0f1b0593e820770ce196aedc27')
+        print('xiayu')
+        get_feed('0x966fdd0cbf5d4a9d4d5c1d0cafa7f12f257ee1bb')
+        print('Felzak')
+        get_feed('0x373578b5918462ba58c7a791e1f9e32ca42e2d2c')
+        print('dark')
+        get_feed('0xff23ea3ccb5842524e574f8c1be4f30988b960ff')
+        print('lv')
+        get_feed('0xcbb149b3e49e5e0432d336f38d6313c4e1d56453')
+        print('joker')
+        get_feed('0x9f7a3b6d885b5ed5386c9b00d337f29c49185a1f')
 
 
 
