@@ -49,16 +49,17 @@ async def post_url(url, data, hard=True):
 
 def get_feed(account):
 
-    data = {"req": {"accountAddress": account}, "page": {"pageSize": 20, "page": 1}}
+    data = {"req": {"accountAddress": account}, "page": {"pageSize": 200, "page": 1}}
     tasks = [post_url('https://api.skyweaver.net/rpc/SkyWeaverAPI/GetFeed', data, False)]
     _results = get_event_loop().run_until_complete(gather(*tasks))
     result = _results[0]
     
-    print(result)
+    # print(result)
     last_time = ''
     mode_map = {}  # RANKED_CONSTRUCTED CONQUEST_CONSTRUCTED
     reward_map = {'SW_SILVER_CARDS': 0, 'SW_GOLD_CARDS': 0, 'SW_BASE_CARDS': 0}
     ticket_used = 0
+    total_conquest_matchs = 0
     result_dict = loads(result)
     for item in result_dict['res']:
         if item['type'] == 'REWARD':
@@ -74,8 +75,6 @@ def get_feed(account):
                     ticket_used += 1
                 elif card['itemType'] == "SW_BASE_CARDS":
                     reward_map['SW_BASE_CARDS'] += 1
-            # if is_conquest:
-            #     ticket_used += 1
         if item['type'] == 'MATCH':  # LEVELUP, REWARD
             match = item['match']
             mode = match['mode']
@@ -93,6 +92,7 @@ def get_feed(account):
             last_time = match['endedAt']
 
             if mode in ['CONQUEST_CONSTRUCTED', 'CONQUEST_DISCOVERY']:
+                total_conquest_matchs += 1
                 if not winned:
                     ticket_used += 1
 
@@ -115,61 +115,56 @@ def get_feed(account):
         print(f"  --{mode}--  {_w}W{_l}L {wr:.1f}%")
         if (mode == 'RANKED_CONSTRUCTED') or (mode == 'CONQUEST_CONSTRUCTED'):
             D_sort = sorted(mode_map[mode]['D'].items(), key=lambda d: d[1]['W'] + d[1]['L'], reverse=True)
-            for deck, dd in D_sort:
+            for deck, dd in D_sort[0:5]:
                 _w = dd['W']
                 _l = dd['L']
                 wr = _w / (_w + _l) * 100
                 print(f"{dd['W']}W{dd['L']}L {wr:.1f}% {deck}")
         
-        print('####出金率###: ', int(100 * (reward_map['SW_GOLD_CARDS'] / ticket_used)), '%'  )
-        print(ticket_used / reward_map['SW_GOLD_CARDS'], '票一金')
-        for reward in reward_map:
-            print(f"{reward_map[reward]} {reward}")
-        print(f"{ticket_used} tickets used")
-        print(f"{last_time}")
+        #print('####出金率###: ', int(100 * (reward_map['SW_GOLD_CARDS'] / ticket_used)), '%'  )
+    print('打金总对局数', total_conquest_matchs)
+    print('最早比赛时间', last_time[: 10])
+    print('获取金卡总数', reward_map['SW_GOLD_CARDS'])
+    print('总票数使用', ticket_used)
+    print( '★★★★★★', str(ticket_used / reward_map['SW_GOLD_CARDS']) + '票1金', '★★★★★★')
 
 
 
 def run():
-        # print('5群内卷榜')
-        # print('---------------------------------------------')
-        # print('5哥')
-        # get_feed('0x814a7f72b64e4b7c20bd138be90f111abc187ecb')
-        # print('---------------------------------------------')
+        print('5群内卷榜')
+        print('---------------------------------------------')
+        print('5哥')
+        get_feed('0x814a7f72b64e4b7c20bd138be90f111abc187ecb')
+        print('---------------------------------------------')
         print('Storm')
         get_feed('0xe5856FEFB63D88fDdafD1B166E47DE486DF9845d')
-        # print('---------------------------------------------')
         print('A宝')
         get_feed('0xd30Ee42Ce365Da9F7590d453a0e89aD39CffE1f4')
-        # print('---------------------------------------------')
-        # print('冰队')
-        # get_feed('0x8563AB624452420760814B08415dF81934cDb1E7')
-        # print('---------------------------------------------')
-        # print('Y哥')
-        # get_feed('0xF8e51fbd802F1B0D6c29155fb9C9DDa8D93fB84E')
-        # print('---------------------------------------------')
-        # print('咪宝')
-        # get_feed('0xf4866719f288d6e314abDcF931B4f1BCFbC96780')
-        # print('yexx天梯第一')
-        # get_feed('0xd7559dd61b9f25daf09d31378be80d81632e7d86')
-        # print('shenggou')
-        # get_feed('0x89a200079e6e2d0f1b0593e820770ce196aedc27')
-        # print('xiayu')
-        # get_feed('0x966fdd0cbf5d4a9d4d5c1d0cafa7f12f257ee1bb')
-        # print('Felzak')
-        # get_feed('0x373578b5918462ba58c7a791e1f9e32ca42e2d2c')
-        # print('dark')
-        # get_feed('0xff23ea3ccb5842524e574f8c1be4f30988b960ff')
-        # print('lv')
-        # get_feed('0xcbb149b3e49e5e0432d336f38d6313c4e1d56453')
-        # print('joker')
-        # get_feed('0x9f7a3b6d885b5ed5386c9b00d337f29c49185a1f')
-        # print('爪子猫')
-        # get_feed('0x3d7a1637351Ee8E3FfAE49FbC1cFA3d62F5Aa44E')
+        print('---------------------------------------------')
+        print('冰队')
+        get_feed('0x8563AB624452420760814B08415dF81934cDb1E7')
+        print('---------------------------------------------')
+        print('Y哥')
+        get_feed('0xF8e51fbd802F1B0D6c29155fb9C9DDa8D93fB84E')
+        print('---------------------------------------------')
+        print('咪宝')
+        get_feed('0xf4866719f288d6e314abDcF931B4f1BCFbC96780')
+        print('yexx天梯第一')
+        get_feed('0xd7559dd61b9f25daf09d31378be80d81632e7d86')
+        print('shenggou')
+        get_feed('0x89a200079e6e2d0f1b0593e820770ce196aedc27')
+        print('xiayu')
+        get_feed('0x373578b5918462ba58c7a791e1f9e32ca42e2d2c')
+        print('dark')
+        get_feed('0xff23ea3ccb5842524e574f8c1be4f30988b960ff')
+        print('lv')
+        get_feed('0xcbb149b3e49e5e0432d336f38d6313c4e1d56453')
+        print('joker')
+        get_feed('0x9f7a3b6d885b5ed5386c9b00d337f29c49185a1f')
+        print('爪子猫')
+        get_feed('0x3d7a1637351Ee8E3FfAE49FbC1cFA3d62F5Aa44E')
 
 
 
 if __name__ == '__main__':
     run()
-# 'https://skyweaverstats.com/deck/'  # 好用一点 也废了
-# 'https://skyweaverdecks.com/decks/'  # 废了
